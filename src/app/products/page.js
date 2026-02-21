@@ -1,14 +1,18 @@
 import Link from 'next/link';
 
 async function getProducts() {
-  const categories = ['beauty', 'fragrances', 'skin-care'];
+  const categories = ['beauty', 'fragrances', 'skin-care', 'womens-bags', 'womens-jewellery', 'womens-watches', 'sunglasses', 'womens-dresses', 'womens-shoes', 'mobile-accessories', 'home-decoration'];
   try {
     const fetches = categories.map(cat => 
       fetch(`https://dummyjson.com/products/category/${cat}`).then(res => res.json())
     );
     const results = await Promise.all(fetches);
-    return results.flatMap(data => data.products);
+    let allProducts = results.flatMap(data => data.products);
+    allProducts.sort(() => Math.random() - 0.5);
+
+    return allProducts;
   } catch (error) {
+    console.error("Gagal mengambil produk:", error);
     return [];
   }
 }

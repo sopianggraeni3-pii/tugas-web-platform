@@ -12,6 +12,7 @@ export default function Home() {
     '/banner-sopi.png',
     '/banner2.png',  // Tambahkan sesuai jumlah ilustrasi kamu
     '/banner3.png',
+    'banner.png',
     '/banner4.png'
   ];
 
@@ -24,7 +25,7 @@ export default function Home() {
     // Timer untuk ganti slide otomatis setiap 5 detik
     const timer = setInterval(() => {
       setCurrentSlide((prev) => (prev === banners.length - 1 ? 0 : prev + 1));
-    }, 5000);
+    }, 3000);
 
     return () => clearInterval(timer);
   }, [banners.length]);

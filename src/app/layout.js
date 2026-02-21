@@ -1,25 +1,28 @@
 import './globals.css';
 import Navbar from '@/components/Navbar';
+import Footer from '@/components/Footer';
 import { CartProvider } from '@/context/CartContext';
 
 export const metadata = {
-  title: 'Toko Sopi - Tugas Web Platform',
-  description: 'Aplikasi Next.js dengan SSR, SSG, dan CSR',
+  title: 'Bare N’ Glow - barenbliss Style',
+  description: 'Tugas Web Platform - Sopi Anggraeni',
 };
 
 export default function RootLayout({ children }) {
   return (
     <html lang="id">
-      <body className="bg-gray-50 text-gray-900 font-sans antialiased min-h-screen">
-        {/* CartProvider membungkus seluruh aplikasi agar State-nya bisa diakses di mana saja */}
+      <body className="bg-white flex flex-col min-h-screen text-gray-900 font-sans antialiased">
         <CartProvider>
-          {/* Navbar akan muncul di semua halaman */}
+          {/* Navbar muncul di paling atas */}
           <Navbar />
           
-          {/* children adalah isi dari masing-masing halaman (SSR/SSG/CSR) */}
-          <main className="pb-20">
+          {/* Main sebagai pembungkus isi halaman agar Footer tetap di bawah */}
+          <main className="flex-grow">
             {children}
           </main>
+          
+          {/* Footer muncul di paling bawah */}
+          <Footer />
         </CartProvider>
       </body>
     </html>

@@ -1,41 +1,76 @@
 import Link from 'next/link';
 
-// Di Next.js App Router, fetch tanpa konfigurasi tambahan otomatis menjadi SSG
 async function getProducts() {
-  const res = await fetch('https://dummyjson.com/products?limit=10');
-  
-  if (!res.ok) {
-    throw new Error('Gagal mengambil data produk'); // Error handling dasar
+  const categories = ['beauty', 'fragrances', 'skin-care'];
+  try {
+    const fetches = categories.map(cat => 
+      fetch(`https://dummyjson.com/products/category/${cat}`).then(res => res.json())
+    );
+    const results = await Promise.all(fetches);
+    return results.flatMap(data => data.products);
+  } catch (error) {
+    return [];
   }
-  
-  return res.json();
 }
 
-export default async function ProductsPage() {
-  const data = await getProducts();
-  const products = data.products;
+export default async function ShopPage() {
+  const products = await getProducts();
 
   return (
-    <div className="p-8">
-      <h1 className="text-3xl font-bold mb-2">Katalog Produk</h1>
-      <p className="text-gray-600 mb-6">Halaman ini di-render menggunakan teknik SSG (Static Site Generation).</p>
-      
-      <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
-        {products.map((product) => (
-          <div key={product.id} className="border rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow">
-            {/* Menggunakan img tag biasa untuk kesederhanaan, bisa diganti next/image nanti */}
-            <img src={product.thumbnail} alt={product.title} className="w-full h-40 object-cover rounded-md mb-4" />
-            <h2 className="font-semibold text-lg truncate">{product.title}</h2>
-            <p className="text-blue-600 font-bold mt-2">${product.price}</p>
-            
-            {/* Tombol ini nanti akan mengarah ke halaman SSR kita */}
-            <Link href={`/product/${product.id}`}>
-              <button className="mt-4 w-full bg-black text-white px-4 py-2 rounded-md hover:bg-gray-800">
-                Lihat Detail
-              </button>
-            </Link>
+    <div className="bg-white min-h-screen">
+      {/* HEADER KATALOG */}
+      <div className="py-24 bg-[#fff8f9] text-center border-b border-pink-50">
+        <h1 className="text-3xl md:text-5xl font-serif italic text-gray-800 tracking-tighter mb-4">
+          The <span className="text-[#ffa6b6]">Beauty</span> Edit
+        </h1>
+        <p className="text-[9px] md:text-[10px] font-bold text-gray-400 uppercase tracking-[0.5em]">
+          Professional Care • Ethereal Glow • Signature Scents
+        </p>
+      </div>
+
+      {/* KONTEN UTAMA: Ramping di tengah (max-w-1200px) */}
+      <div className="max-w-[1200px] mx-auto px-10 md:px-16 py-16">
+        
+        <div className="flex justify-between items-end mb-12">
+          <div className="text-left">
+            <h2 className="text-[10px] text-gray-400 uppercase tracking-[0.3em] mb-1 font-bold">Curation</h2>
+            <p className="text-lg font-serif italic text-gray-800">Selected Essentials</p>
           </div>
-        ))}
+          <p className="text-[9px] text-gray-400 uppercase tracking-widest italic font-medium">
+            Collection / {products.length} Items
+          </p>
+        </div>
+
+        {/* GRID: 5 Kolom agar pas di kontainer 1200px */}
+        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-x-8 gap-y-16">
+          {products.map((product) => (
+            <Link href={`/product/${product.id}`} key={product.id} className="group flex flex-col items-center">
+              
+              {/* Box Gambar Mungil & Mulus */}
+              <div className="bg-[#fff8f9] aspect-square w-full overflow-hidden relative mb-6 rounded-sm flex justify-center items-center p-8 group-hover:bg-pink-50 transition-all duration-500">
+                <span className="absolute top-2 left-2 z-10 bg-white/90 text-[#ffa6b6] text-[7px] font-black px-2 py-0.5 rounded-full uppercase tracking-tighter">
+                  ✨ {product.category.replace('-', ' ')}
+                </span>
+                <img 
+                  src={product.thumbnail} 
+                  alt={product.title} 
+                  className="max-h-full max-w-full object-contain group-hover:scale-110 transition-transform duration-700" 
+                />
+              </div>
+
+              {/* Teks Produk yang Rapih */}
+              <div className="text-center w-full">
+                <h3 className="text-[9px] font-bold text-gray-600 tracking-[0.2em] uppercase mb-2 line-clamp-1 group-hover:text-[#ffa6b6] transition-colors">
+                  {product.title}
+                </h3>
+                <p className="text-[#ffa6b6] text-xs font-serif italic font-bold">
+                  ${product.price}
+                </p>
+              </div>
+
+            </Link>
+          ))}
+        </div>
       </div>
     </div>
   );

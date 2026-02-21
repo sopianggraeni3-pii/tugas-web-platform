@@ -1,90 +1,79 @@
-'use client'; // WAJIB ADA: Ini menandakan komponen ini adalah Client-Side Rendering (CSR)
+'use client'; // Wajib untuk CSR
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 
 export default function SearchPage() {
-  // State Management (Wajib) menggunakan local state
   const [query, setQuery] = useState('');
   const [results, setResults] = useState([]);
-  const [isLoading, setIsLoading] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  // useEffect untuk mengambil data setiap kali teks pencarian berubah
-  useEffect(() => {
-    if (query.trim() === '') {
-      setResults([]);
-      return;
+  // Fungsi untuk mengambil data berdasarkan pencarian (CSR)
+  const handleSearch = async (e) => {
+    if (e) e.preventDefault();
+    if (!query) return;
+
+    setLoading(true);
+    try {
+      const res = await fetch(`https://dummyjson.com/products/search?q=${query}`);
+      const data = await res.json();
+      setResults(data.products);
+    } catch (error) {
+      console.error("Search error:", error);
+    } finally {
+      setLoading(false);
     }
-
-    const fetchSearchResults = async () => {
-      setIsLoading(true);
-      try {
-        const res = await fetch(`https://dummyjson.com/products/search?q=${query}`);
-        const data = await res.json();
-        setResults(data.products);
-      } catch (error) {
-        console.error('Gagal mengambil data pencarian:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    // Memberikan jeda waktu (debounce) agar tidak memanggil API di setiap ketikan huruf
-    const delayDebounceFn = setTimeout(() => {
-      fetchSearchResults();
-    }, 500);
-
-    return () => clearTimeout(delayDebounceFn);
-  }, [query]);
+  };
 
   return (
-    <div className="p-10 max-w-5xl mx-auto">
-      <Link href="/products" className="text-blue-600 hover:underline mb-6 inline-block">
-        &larr; Kembali ke Katalog
-      </Link>
-
-      <h1 className="text-3xl font-bold mb-6">Cari Produk (CSR)</h1>
-      
-      {/* Input Pencarian */}
-      <input
-        type="text"
-        placeholder="Ketik nama produk (misal: laptop, phone)..."
-        className="w-full p-4 border border-gray-300 rounded-lg mb-8 focus:outline-none focus:ring-2 focus:ring-blue-500"
-        value={query}
-        onChange={(e) => setQuery(e.target.value)}
-      />
-
-      {/* Loading Indicator */}
-      {isLoading && (
-        <div className="text-center text-blue-600 font-semibold mb-8">
-          ⏳ Sedang mencari produk...
+    <div className="bg-white min-h-screen pt-32 pb-20">
+      <div className="max-w-[1000px] mx-auto px-10">
+        
+        {/* Input Area */}
+        <div className="text-center mb-20">
+            <h1 className="text-3xl font-serif italic text-black mb-8 tracking-tight">
+                Find Your <span className="text-[#ffa6b6]">Glow</span>
+            </h1>
+            <form onSubmit={handleSearch} className="relative max-w-xl mx-auto">
+                <input 
+                    type="text"
+                    placeholder="SEARCH FOR PRODUCTS..."
+                    className="w-full border-b-2 border-pink-50 py-4 px-2 text-[11px] text-gray-800 tracking-[0.3em] font-bold focus:outline-none focus:border-[#ffa6b6] bg-transparent transition-colors placeholder:text-gray-300"
+                    value={query}
+                    onChange={(e) => setQuery(e.target.value)}
+                />
+            <button 
+              type="submit"
+              className="absolute right-2 top-4 text-[#ffa6b6] text-[10px] font-black tracking-widest uppercase hover:text-gray-800 transition-colors"
+            >
+              {loading ? 'Searching...' : 'Go'}
+            </button>
+          </form>
         </div>
-      )}
 
-      {/* Hasil Pencarian */}
-      {!isLoading && results.length > 0 && (
-        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
-          {results.map((product) => (
-            <div key={product.id} className="border rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow bg-white">
-              <img src={product.thumbnail} alt={product.title} className="w-full h-40 object-cover rounded-md mb-4" />
-              <h2 className="font-semibold text-lg truncate">{product.title}</h2>
-              <p className="text-blue-600 font-bold mt-2">${product.price}</p>
-              <Link href={`/product/${product.id}`}>
-                <button className="mt-4 w-full bg-black text-white px-4 py-2 rounded-md hover:bg-gray-800">
-                  Lihat Detail
-                </button>
+        {/* Results Area */}
+        {results.length > 0 ? (
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+            {results.map((product) => (
+              <Link href={`/product/${product.id}`} key={product.id} className="group">
+                <div className="bg-[#fff8f9] aspect-square rounded-sm flex justify-center items-center p-8 mb-4 overflow-hidden relative group-hover:bg-pink-50 transition-all">
+                  <img src={product.thumbnail} alt={product.title} className="max-h-full max-w-full object-contain group-hover:scale-110 transition-transform duration-500" />
+                </div>
+                <div className="text-center">
+                  <h3 className="text-[9px] font-bold text-gray-600 tracking-widest uppercase mb-1 line-clamp-1">{product.title}</h3>
+                  <p className="text-[#ffa6b6] text-[10px] font-bold">${product.price}</p>
+                </div>
               </Link>
-            </div>
-          ))}
-        </div>
-      )}
+            ))}
+          </div>
+        ) : query && !loading ? (
+          <p className="text-center font-serif italic text-gray-400">No products found for "{query}"</p>
+        ) : (
+          <div className="text-center py-20 opacity-30">
+            <p className="text-[10px] tracking-[0.5em] uppercase font-bold text-gray-400">Your search results will appear here</p>
+          </div>
+        )}
 
-      {!isLoading && query !== '' && results.length === 0 && (
-        <p className="text-center text-red-500 mt-8">Produk tidak ditemukan.</p>
-      )}
-
-      <div className="mt-12 p-4 bg-gray-50 rounded-lg border border-gray-200 text-sm text-gray-600">
-        <strong>Info Teknis:</strong> Halaman ini menggunakan Client-Side Rendering (CSR). Data diambil langsung dari browser pengguna menggunakan <code>useEffect</code> setelah halaman dimuat. Sangat cocok untuk interaksi dinamis seperti pencarian.
       </div>
     </div>
   );
